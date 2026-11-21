@@ -1,0 +1,2183 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LKPD Interaktif: Interpretasi Citra</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- html2pdf.js untuk ekspor laporan PDF dari Panel Guru -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    /* Menggunakan font sistem modern yang bersih */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* Kustomisasi scrollbar agar rapi pada tabel yang lebar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.5);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.8);
+    }
+
+    /* Mencegah scroll layar saat siswa menggambar pada kanvas di layar sentuh */
+    #annotationCanvas {
+      touch-action: none;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
+
+  <!-- HEADER UTAMA (Gradasi Biru ke Hijau) -->
+  <header class="bg-gradient-to-r from-blue-600 via-teal-600 to-emerald-600 text-white shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl sm:text-3xl bg-white/20 p-2 rounded-xl backdrop-blur-sm shadow-inner">🛰️</span>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold tracking-tight leading-tight">LKPD Interaktif: Interpretasi Citra</h1>
+          <p class="text-xs text-blue-100 hidden sm:block">Geografi Fase E • Alokasi Waktu: 2 × 45 Menit • Kolaborasi Daring</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <!-- Indikator Status Sinkronisasi Online -->
+        <div id="syncBadge" class="hidden md:flex items-center gap-1.5 text-xs bg-white/15 px-3 py-1.5 rounded-full border border-white/20">
+          <span class="w-2 h-2 rounded-full bg-yellow-300 animate-pulse" id="syncDot"></span>
+          <span id="syncText">Menghubungkan...</span>
+        </div>
+
+        <!-- Tombol Beranda (Disembunyikan saat berada di Beranda) -->
+        <button id="btnNavHome" onclick="navigateTo('home')" class="hidden items-center gap-1.5 bg-white/20 hover:bg-white/30 active:scale-95 text-white font-medium text-sm px-3.5 py-2 rounded-xl transition cursor-pointer">
+          <i data-lucide="home" class="w-4 h-4"></i>
+          <span>Beranda</span>
+        </button>
+
+        <!-- Tombol Panel Guru -->
+        <button id="btnNavTeacher" onclick="openTeacherAuthOrPanel()" class="flex items-center gap-1.5 bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-900 font-semibold text-sm px-3.5 py-2 rounded-xl shadow transition cursor-pointer">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          <span>Panel Guru</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- KONTEN UTAMA DINAMIS -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ==================== 1. HALAMAN BERANDA ==================== -->
+    <section id="view-home" class="space-y-6">
+      <!-- Kartu 1: Tujuan Pembelajaran (Garis kuning di kiri) -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-8 border-l-amber-400 rounded-2xl p-5 sm:p-6 shadow-sm">
+        <div class="flex items-start gap-3.5">
+          <div class="p-2.5 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-300 rounded-xl shrink-0">
+            <i data-lucide="target" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Tujuan Pembelajaran</span>
+            <h2 class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white mt-1 leading-relaxed">
+              “Menerapkan unsur-unsur interpretasi citra untuk mengidentifikasi objek pada citra penginderaan jauh.”
+            </h2>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kartu 2: Petunjuk Pengerjaan (8 Langkah persis sesuai referensi) -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="p-2.5 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 rounded-xl">
+            <i data-lucide="clipboard-list" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Petunjuk Pengerjaan</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Ikuti 8 langkah kegiatan diskusi kelompok berikut menggunakan laptop:</p>
+          </div>
+        </div>
+
+        <ol class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+          <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+            <span class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">1</span>
+            <span>Pilih Kelas</span>
+          </li>
+          <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+            <span class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">2</span>
+            <span>Pilih nomor kelompok</span>
+          </li>
+          <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+            <span class="w-6 h-6 rounded-full bg-teal-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">3</span>
+            <span>Perhatikan keseluruhan citra yang disediakan guru. Kenali pola umum wilayah sebelum memilih objek.</span>
+          </li>
+          <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+            <span class="w-6 h-6 rounded-full bg-teal-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">4</span>
+            <span>Pilih minimal 5 objek yang terlihat cukup jelas dan berbeda karakteristiknya.</span>
+          </li>
+          <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+            <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">5</span>
+            <span>Gunakan nomor, lingkaran, panah, atau kotak pada citra untuk menunjukkan lokasi objek.</span>
+          </li>
+          <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+            <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">6</span>
+            <span>Pilih unsur interpretasi yang relevan: rona/warna, bentuk, ukuran, tekstur, pola, bayangan, situs, dan asosiasi.</span>
+          </li>
+          <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+            <span class="w-6 h-6 rounded-full bg-amber-500 text-slate-900 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">7</span>
+            <span>Jelaskan ciri yang benar-benar terlihat pada citra. Jangan hanya menuliskan nama objek.</span>
+          </li>
+          <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+            <span class="w-6 h-6 rounded-full bg-amber-500 text-slate-900 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">8</span>
+            <span>Tentukan identifikasi objek dan siapkan alasan untuk dipresentasikan.</span>
+          </li>
+        </ol>
+      </div>
+
+      <!-- Kartu 3: Pilih Kelas (Jingga, Hijau Toska, Ungu dengan label Dibuka/Ditutup) -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm">
+        <div class="flex items-center justify-between flex-wrap gap-2 mb-5">
+          <div class="flex items-center gap-3">
+            <div class="p-2.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-300 rounded-xl">
+              <i data-lucide="school" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-slate-900 dark:text-white">Pilih Kelas</h2>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Klik kartu kelas Anda untuk masuk ke ruang diskusi kelompok</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="classCardsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <!-- Dirender dinamis oleh JavaScript -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 2. HALAMAN DAFTAR KELOMPOK (1-6) ==================== -->
+    <section id="view-groups" class="hidden space-y-6">
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="selectedClassBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">KELAS X-1</span>
+            <span class="text-xs text-slate-500 dark:text-slate-400">• 6 Kelompok Kerja</span>
+          </div>
+          <h2 class="text-xl font-bold mt-1 text-slate-900 dark:text-white">Pilih Kelompok Diskusi</h2>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Setiap pasangan kelompok menganalisis citra penginderaan jauh yang berbeda.</p>
+        </div>
+        <button onclick="navigateTo('home')" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition cursor-pointer">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span>Ganti Kelas</span>
+        </button>
+      </div>
+
+      <!-- 6 Kartu Kelompok -->
+      <div id="groupCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Dirender dinamis oleh JavaScript -->
+      </div>
+    </section>
+
+    <!-- ==================== 3. HALAMAN LEMBAR KERJA KELOMPOK ==================== -->
+    <section id="view-workspace" class="hidden space-y-6">
+      <!-- Bar Navigasi Atas Lembar Kerja -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+        <div class="flex items-center gap-3">
+          <button onclick="navigateTo('groups')" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer" title="Kembali ke Daftar Kelompok">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+          </button>
+          <div>
+            <div class="flex items-center gap-2">
+              <span id="wsClassBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">X-1</span>
+              <span id="wsImageLabel" class="text-xs font-medium text-emerald-600 dark:text-emerald-400">Citra Wilayah 1</span>
+            </div>
+            <h2 id="wsTitle" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Lembar Kerja Kelompok 1</h2>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5">
+          <span id="wsSaveStatus" class="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5">
+            <i data-lucide="cloud-check" class="w-3.5 h-3.5"></i>
+            <span>Tersimpan Otomatis</span>
+          </span>
+
+          <!-- Navigasi ke Mode Presentasi -->
+          <button onclick="openPresentationMode()" class="inline-flex items-center gap-2 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-900 font-bold text-sm px-4 py-2.5 rounded-xl shadow transition cursor-pointer">
+            <i data-lucide="presentation" class="w-4 h-4"></i>
+            <span>Mode Presentasi</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bagian A: Identitas Kelompok (Diatas Gambar Citra) -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+        <div class="flex items-center gap-2 mb-3 text-blue-600 dark:text-blue-400 font-bold text-sm">
+          <i data-lucide="users" class="w-4 h-4"></i>
+          <span>Identitas Kelompok</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label for="inputGroupName" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Nama Kelompok / Julukan Tim</label>
+            <input type="text" id="inputGroupName" placeholder="Contoh: Kelompok 1 (Kartografi)" oninput="scheduleSave()" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div class="md:col-span-2">
+            <label for="inputGroupMembers" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Nama Anggota Kelompok (Pisahkan dengan koma atau baris baru)</label>
+            <input type="text" id="inputGroupMembers" placeholder="Contoh: 1. Andi Pratama, 2. Budi Santoso, 3. Citra Lestari, 4. Dewi Ayu, 5. Eka Putra" oninput="scheduleSave()" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Bagian B: Kanvas Citra Interaktif + Alat Gambar (Paint Tools) -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 class="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+              <i data-lucide="map-pin" class="w-5 h-5 text-emerald-500"></i>
+              <span>Citra Penginderaan Jauh & Penandaan Objek</span>
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Gunakan alat gambar di bawah untuk melingkari, memberi kotak, panah, atau nomor 1–5 pada objek yang diamati.</p>
+          </div>
+        </div>
+
+        <!-- Toolbar Paint (Tombol terpilih berwarna kuning) -->
+        <div class="flex flex-wrap items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800/90 rounded-xl border border-slate-200 dark:border-slate-700">
+          <!-- Jenis Alat -->
+          <div class="flex flex-wrap items-center gap-1.5" id="toolButtons">
+            <button type="button" data-tool="pen" onclick="selectTool('pen')" class="tool-btn bg-amber-400 text-slate-900 font-semibold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition cursor-pointer">
+              <i data-lucide="pen-tool" class="w-3.5 h-3.5"></i>
+              <span>Coret Bebas</span>
+            </button>
+            <button type="button" data-tool="circle" onclick="selectTool('circle')" class="tool-btn bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 hover:bg-slate-200 dark:hover:bg-slate-600 transition cursor-pointer">
+              <i data-lucide="circle" class="w-3.5 h-3.5"></i>
+              <span>Lingkaran</span>
+            </button>
+            <button type="button" data-tool="rect" onclick="selectTool('rect')" class="tool-btn bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 hover:bg-slate-200 dark:hover:bg-slate-600 transition cursor-pointer">
+              <i data-lucide="square" class="w-3.5 h-3.5"></i>
+              <span>Kotak</span>
+            </button>
+            <button type="button" data-tool="arrow" onclick="selectTool('arrow')" class="tool-btn bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 hover:bg-slate-200 dark:hover:bg-slate-600 transition cursor-pointer">
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+              <span>Panah</span>
+            </button>
+            <button type="button" data-tool="number" onclick="selectTool('number')" class="tool-btn bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 hover:bg-slate-200 dark:hover:bg-slate-600 transition cursor-pointer">
+              <i data-lucide="hash" class="w-3.5 h-3.5"></i>
+              <span>Label Nomor</span>
+            </button>
+          </div>
+
+          <div class="h-6 w-px bg-slate-300 dark:bg-slate-600 mx-1 hidden sm:block"></div>
+
+          <!-- Palet Warna Cerah -->
+          <div class="flex items-center gap-1.5" id="colorPalette">
+            <button type="button" data-color="#ef4444" onclick="selectColor('#ef4444')" class="color-btn w-7 h-7 rounded-full bg-red-500 ring-2 ring-offset-2 ring-amber-400 dark:ring-offset-slate-800 cursor-pointer" title="Merah"></button>
+            <button type="button" data-color="#facc15" onclick="selectColor('#facc15')" class="color-btn w-7 h-7 rounded-full bg-yellow-400 border border-slate-300 cursor-pointer" title="Kuning"></button>
+            <button type="button" data-color="#22c55e" onclick="selectColor('#22c55e')" class="color-btn w-7 h-7 rounded-full bg-green-500 cursor-pointer" title="Hijau"></button>
+            <button type="button" data-color="#3b82f6" onclick="selectColor('#3b82f6')" class="color-btn w-7 h-7 rounded-full bg-blue-500 cursor-pointer" title="Biru"></button>
+            <button type="button" data-color="#ec4899" onclick="selectColor('#ec4899')" class="color-btn w-7 h-7 rounded-full bg-pink-500 cursor-pointer" title="Merah Muda"></button>
+            <button type="button" data-color="#ffffff" onclick="selectColor('#ffffff')" class="color-btn w-7 h-7 rounded-full bg-white border border-slate-400 cursor-pointer" title="Putih"></button>
+          </div>
+
+          <div class="h-6 w-px bg-slate-300 dark:bg-slate-600 mx-1 hidden sm:block"></div>
+
+          <!-- Ukuran Garis & Aksi Undo / Hapus -->
+          <div class="flex items-center gap-2 ml-auto">
+            <select id="strokeWidthSelect" onchange="currentStrokeWidth = parseInt(this.value)" class="rounded-xl bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-xs px-2.5 py-2 font-medium">
+              <option value="3">Tipis (3px)</option>
+              <option value="5" selected>Sedang (5px)</option>
+              <option value="8">Tebal (8px)</option>
+            </select>
+
+            <button type="button" onclick="undoCanvas()" class="px-3 py-2 rounded-xl bg-white dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-xs font-medium flex items-center gap-1 border border-slate-300 dark:border-slate-600 cursor-pointer" title="Batalkan coretan terakhir">
+              <i data-lucide="undo-2" class="w-3.5 h-3.5"></i>
+              <span>Undo</span>
+            </button>
+
+            <button type="button" onclick="confirmClearCanvas()" class="px-3 py-2 rounded-xl bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60 text-xs font-semibold flex items-center gap-1 cursor-pointer" title="Hapus semua coretan">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              <span>Bersihkan</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Area Gambar Citra & Kanvas Overlay -->
+        <div class="relative w-full rounded-2xl overflow-hidden border-2 border-slate-300 dark:border-slate-700 bg-slate-900 select-none shadow-inner">
+          <img id="satelliteImage" src="" alt="Citra Penginderaan Jauh" class="w-full h-auto block pointer-events-none" />
+          <canvas id="annotationCanvas" class="absolute inset-0 w-full h-full cursor-crosshair"></canvas>
+        </div>
+      </div>
+
+      <!-- Bagian C: Tabel Identifikasi 5 Objek & 8 Unsur Interpretasi Citra (Header Biru) -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 class="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+              <i data-lucide="table" class="w-5 h-5 text-blue-600"></i>
+              <span>Tabel Identifikasi Unsur Interpretasi Citra (5 Objek)</span>
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Tuliskan ciri nyata yang terlihat pada citra untuk setiap unsur interpretasi pada 5 objek pilihan kelompok Anda.</p>
+          </div>
+          <span class="text-xs font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">Geser ke samping jika layar kecil →</span>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+          <table class="w-full text-xs text-left border-collapse min-w-[1250px]">
+            <thead>
+              <tr class="bg-blue-600 text-white font-semibold">
+                <th class="p-3 border-r border-blue-500 w-10 text-center">No</th>
+                <th class="p-3 border-r border-blue-500 w-40">Nama Objek</th>
+                <th class="p-3 border-r border-blue-500 w-28">Warna Penanda</th>
+                <th class="p-3 border-r border-blue-500 w-36">Rona / Warna</th>
+                <th class="p-3 border-r border-blue-500 w-36">Bentuk</th>
+                <th class="p-3 border-r border-blue-500 w-36">Ukuran</th>
+                <th class="p-3 border-r border-blue-500 w-36">Tekstur</th>
+                <th class="p-3 border-r border-blue-500 w-36">Pola</th>
+                <th class="p-3 border-r border-blue-500 w-36">Bayangan</th>
+                <th class="p-3 border-r border-blue-500 w-36">Situs</th>
+                <th class="p-3 w-40">Asosiasi</th>
+              </tr>
+            </thead>
+            <tbody id="interpretationTableBody" class="divide-y divide-slate-200 dark:divide-slate-700">
+              <!-- 5 Baris dirender dinamis -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Bagian D: Pertanyaan Esai Refleksi -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+        <div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-base">
+          <i data-lucide="file-question" class="w-5 h-5"></i>
+          <span>Pertanyaan Diskusi & Refleksi</span>
+        </div>
+
+        <div class="space-y-4">
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+            <label for="essay1" class="block text-sm font-semibold text-slate-800 dark:text-slate-100 mb-2">
+              1. Unsur apa yang paling membantu kelompokmu mengidentifikasi objek?
+            </label>
+            <textarea id="essay1" rows="2" oninput="scheduleSave()" placeholder="Tuliskan jawaban diskusi kelompok Anda di sini..." class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+            <label for="essay2" class="block text-sm font-semibold text-slate-800 dark:text-slate-100 mb-2">
+              2. Apakah ada objek yang sulit dibedakan? Jelaskan penyebabnya.
+            </label>
+            <textarea id="essay2" rows="2" oninput="scheduleSave()" placeholder="Tuliskan jawaban diskusi kelompok Anda di sini..." class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+            <label for="essay3" class="block text-sm font-semibold text-slate-800 dark:text-slate-100 mb-2">
+              3. Mengapa identifikasi objek sebaiknya menggunakan lebih dari satu unsur?
+            </label>
+            <textarea id="essay3" rows="2" oninput="scheduleSave()" placeholder="Tuliskan jawaban diskusi kelompok Anda di sini..." class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <button onclick="saveCurrentGroupData(true)" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow transition cursor-pointer">
+            <i data-lucide="save" class="w-4 h-4"></i>
+            <span>Simpan Hasil Diskusi</span>
+          </button>
+
+          <button onclick="openPresentationMode()" class="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold text-sm px-5 py-2.5 rounded-xl shadow transition cursor-pointer">
+            <i data-lucide="presentation" class="w-4 h-4"></i>
+            <span>Lanjut ke Mode Presentasi →</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 4. MODE PRESENTASI (BERLATAR TERANG) ==================== -->
+    <section id="view-presentation" class="hidden bg-white text-slate-900 border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-lg space-y-6">
+      <!-- Header Presentasi Terang -->
+      <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-600 text-white" id="presClassBadge">KELAS X-1</span>
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800" id="presGroupBadge">KELOMPOK 1</span>
+          </div>
+          <h2 id="presGroupTitle" class="text-2xl font-extrabold text-slate-900 mt-2">Hasil Interpretasi Citra - Kelompok 1</h2>
+          <p id="presMembers" class="text-sm text-slate-600 mt-1">Anggota: -</p>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+          <button onclick="navigateTo('workspace')" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-sm transition cursor-pointer">
+            <i data-lucide="edit-3" class="w-4 h-4"></i>
+            <span>Kembali Edit LKPD</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Citra Hasil Penandaan Kelompok -->
+      <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+        <h3 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+          <i data-lucide="image" class="w-4 h-4 text-blue-600"></i>
+          <span>Peta / Citra Hasil Penandaan Objek</span>
+        </h3>
+        <div class="rounded-xl overflow-hidden border border-slate-300 bg-white max-w-4xl mx-auto shadow-sm">
+          <img id="presAnnotatedImage" src="" alt="Hasil Anotasi Citra" class="w-full h-auto block" />
+        </div>
+      </div>
+
+      <!-- Ringkasan Tabel Hasil Identifikasi -->
+      <div class="space-y-2">
+        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+          <i data-lucide="list-checks" class="w-5 h-5 text-emerald-600"></i>
+          <span>Hasil Analisis 8 Unsur Interpretasi Citra</span>
+        </h3>
+        <div class="overflow-x-auto rounded-xl border border-slate-300">
+          <table class="w-full text-xs text-left border-collapse min-w-[1000px]">
+            <thead>
+              <tr class="bg-blue-600 text-white font-semibold">
+                <th class="p-3 border-r border-blue-500 text-center w-10">No</th>
+                <th class="p-3 border-r border-blue-500">Objek</th>
+                <th class="p-3 border-r border-blue-500">Warna</th>
+                <th class="p-3 border-r border-blue-500">Rona/Warna</th>
+                <th class="p-3 border-r border-blue-500">Bentuk</th>
+                <th class="p-3 border-r border-blue-500">Ukuran</th>
+                <th class="p-3 border-r border-blue-500">Tekstur</th>
+                <th class="p-3 border-r border-blue-500">Pola</th>
+                <th class="p-3 border-r border-blue-500">Bayangan</th>
+                <th class="p-3 border-r border-blue-500">Situs</th>
+                <th class="p-3">Asosiasi</th>
+              </tr>
+            </thead>
+            <tbody id="presTableBody" class="divide-y divide-slate-200 bg-white text-slate-800">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Ringkasan Jawaban Esai -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="p-4 rounded-xl bg-blue-50 border border-blue-200">
+          <p class="text-xs font-bold text-blue-800 mb-1">1. Unsur Paling Membantu:</p>
+          <p id="presEssay1" class="text-sm text-slate-800 whitespace-pre-line">-</p>
+        </div>
+        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
+          <p class="text-xs font-bold text-emerald-800 mb-1">2. Objek Sulit Dibedakan & Penyebab:</p>
+          <p id="presEssay2" class="text-sm text-slate-800 whitespace-pre-line">-</p>
+        </div>
+        <div class="p-4 rounded-xl bg-amber-50 border border-amber-200">
+          <p class="text-xs font-bold text-amber-800 mb-1">3. Pentingnya Lebih dari Satu Unsur:</p>
+          <p id="presEssay3" class="text-sm text-slate-800 whitespace-pre-line">-</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 5. PANEL GURU (MONITORING, PENGATURAN, PDF) ==================== -->
+    <section id="view-teacher" class="hidden space-y-6">
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="p-3 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-300 rounded-xl">
+            <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white">Panel Kontrol & Pemantauan Guru</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Kelola akses kelas, bagikan tautan ke murid, pantau progres kelompok secara real-time, dan unduh PDF.</p>
+          </div>
+        </div>
+        <button onclick="logoutTeacher()" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-xs font-semibold transition cursor-pointer">
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+          <span>Keluar Panel Guru</span>
+        </button>
+      </div>
+
+      <!-- Baris Atas Panel Guru: Pengaturan Kelas (Kartu Berwarna) + Bagikan Tautan ke Murid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Pengaturan Buka/Tutup Kelas (2 kolom) -->
+        <div class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+          <h3 class="font-bold text-base flex items-center gap-2 text-slate-900 dark:text-white">
+            <i data-lucide="lock" class="w-5 h-5 text-blue-600"></i>
+            <span>Pengaturan Akses Kelas (Buka / Tutup)</span>
+          </h3>
+          <div id="teacherClassToggles" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <!-- Kartu berwarna X-1, X-2, X-3 dirender via JS -->
+          </div>
+        </div>
+
+        <!-- Kartu Bagikan Tautan ke Murid -->
+        <div class="bg-gradient-to-br from-blue-50 to-emerald-50 dark:from-slate-900 dark:to-slate-800 border border-blue-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-center gap-2 text-blue-700 dark:text-blue-300 font-bold text-base mb-1">
+              <i data-lucide="share-2" class="w-5 h-5"></i>
+              <span>Bagikan Tautan ke Murid</span>
+            </div>
+            <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              Bagikan tautan halaman LKPD ini kepada murid agar dapat dibuka melalui laptop masing-masing dan terhubung langsung ke pemantauan Anda.
+            </p>
+          </div>
+
+          <div class="space-y-2">
+            <input type="text" id="shareUrlInput" readonly class="w-full text-xs bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-slate-700 dark:text-slate-200 font-mono" />
+            <button onclick="copyShareLink()" class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs py-2.5 px-4 rounded-xl shadow transition cursor-pointer">
+              <i data-lucide="copy" class="w-4 h-4"></i>
+              <span>Salin Tautan LKPD</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pengaturan Sumber Citra Asli dari File Guru (Kualitas Penuh Tanpa Kompresi) -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 class="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+              <i data-lucide="image-plus" class="w-5 h-5 text-emerald-600"></i>
+              <span>Muat Gambar Citra Asli dari File Anda (Kualitas Asli 100%)</span>
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              Pilih 3 file gambar citra asli dari dokumen Anda (atau ekstrak dari file .docx/.pdf) agar tampil persis dengan resolusi dan kualitas asli tanpa diubah.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-blue-700 dark:text-blue-300">Citra Kelompok 1 & 2</span>
+              <span id="imgStatus1" class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Siap</span>
+            </div>
+            <img id="previewTeacherImg1" src="" alt="Preview Citra 1-2" class="w-full h-32 object-cover rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-900" />
+            <label class="block w-full text-center py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold cursor-pointer transition">
+              <span>Pilih File Citra Asli (1 & 2)</span>
+              <input type="file" accept="image/*" onchange="handleUploadOriginalImage(1, event)" class="hidden" />
+            </label>
+          </div>
+
+          <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-emerald-700 dark:text-emerald-300">Citra Kelompok 3 & 4</span>
+              <span id="imgStatus2" class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Siap</span>
+            </div>
+            <img id="previewTeacherImg2" src="" alt="Preview Citra 3-4" class="w-full h-32 object-cover rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-900" />
+            <label class="block w-full text-center py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold cursor-pointer transition">
+              <span>Pilih File Citra Asli (3 & 4)</span>
+              <input type="file" accept="image/*" onchange="handleUploadOriginalImage(2, event)" class="hidden" />
+            </label>
+          </div>
+
+          <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-amber-700 dark:text-amber-300">Citra Kelompok 5 & 6</span>
+              <span id="imgStatus3" class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Siap</span>
+            </div>
+            <img id="previewTeacherImg3" src="" alt="Preview Citra 5-6" class="w-full h-32 object-cover rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-900" />
+            <label class="block w-full text-center py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-900 text-xs font-semibold cursor-pointer transition">
+              <span>Pilih File Citra Asli (5 & 6)</span>
+              <input type="file" accept="image/*" onchange="handleUploadOriginalImage(3, event)" class="hidden" />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pemantauan Pengerjaan Siswa Real-Time -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 class="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+              <i data-lucide="activity" class="w-5 h-5 text-emerald-500"></i>
+              <span>Pemantauan Pengerjaan Siswa (Real-Time)</span>
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Pilih kelas di bawah untuk memantau progres tiap kelompok atau mengunduh hasil dalam format PDF.</p>
+          </div>
+
+          <!-- Filter Kelas di Panel Guru -->
+          <div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl">
+            <button onclick="setTeacherFilterClass('X-1')" id="tabTeacher-X-1" class="teacher-tab px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white cursor-pointer">Kelas X-1</button>
+            <button onclick="setTeacherFilterClass('X-2')" id="tabTeacher-X-2" class="teacher-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 cursor-pointer">Kelas X-2</button>
+            <button onclick="setTeacherFilterClass('X-3')" id="tabTeacher-X-3" class="teacher-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 cursor-pointer">Kelas X-3</button>
+          </div>
+        </div>
+
+        <!-- Daftar Monitoring 6 Kelompok -->
+        <div id="teacherMonitoringGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Dirender dinamis -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODAL PASSWORD GURU ==================== -->
+  <div id="modalTeacherLogin" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 bg-amber-100 dark:bg-amber-900/40 text-amber-600 rounded-xl">
+            <i data-lucide="key-round" class="w-5 h-5"></i>
+          </div>
+          <h3 class="font-bold text-lg text-slate-900 dark:text-white">Akses Panel Guru</h3>
+        </div>
+        <button onclick="closeTeacherModal()" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-500 dark:text-slate-400">Masukkan kata sandi guru untuk membuka pengaturan kelas dan pemantauan siswa.</p>
+
+      <form onsubmit="submitTeacherPassword(event)" class="space-y-4">
+        <div class="relative">
+          <input type="password" id="teacherPasswordInput" required placeholder="Masukkan kata sandi..." class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400" />
+          <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer" title="Tampilkan/Sembunyikan Sandi">
+            <i data-lucide="eye" id="eyeIcon" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <p id="teacherLoginError" class="hidden text-xs text-red-600 dark:text-red-400 font-medium">Kata sandi salah. Silakan coba lagi.</p>
+
+        <div class="flex justify-end gap-2">
+          <button type="button" onclick="closeTeacherModal()" class="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">Batal</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 text-xs font-bold shadow cursor-pointer">Masuk Panel Guru</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL KONFIRMASI HAPUS CORETAN ==================== -->
+  <div id="modalConfirmClear" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+      <h3 class="font-bold text-base text-slate-900 dark:text-white">Bersihkan Semua Coretan?</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400">Semua lingkaran, panah, dan nomor yang telah digambar pada citra kelompok ini akan dihapus.</p>
+      <div class="flex justify-end gap-2">
+        <button onclick="document.getElementById('modalConfirmClear').classList.add('hidden')" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-semibold cursor-pointer">Batal</button>
+        <button onclick="executeClearCanvas()" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-semibold cursor-pointer">Ya, Bersihkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL DETAIL PEMANTAUAN GURU ==================== -->
+  <div id="modalInspectGroup" class="hidden fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <div>
+          <h3 id="inspectTitle" class="font-bold text-lg text-slate-900 dark:text-white">Detail Pengerjaan Kelompok</h3>
+          <p id="inspectSubtitle" class="text-xs text-slate-500 dark:text-slate-400">Anggota: -</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btnInspectDownloadPdf" class="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl cursor-pointer">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span>Unduh PDF</span>
+          </button>
+          <button onclick="document.getElementById('modalInspectGroup').classList.add('hidden')" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+      <div id="inspectBody" class="p-5 overflow-y-auto space-y-4 text-xs">
+        <!-- Konten detail diisi dinamis -->
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFIKASI RINGAN (Pengganti alert) -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- KONTAINER TERSEMBUNYI UNTUK CETAK PDF -->
+  <div id="pdfPrintSandbox" class="fixed -left-[9999px] top-0 w-[800px] bg-white text-slate-900 p-6"></div>
+
+  <!-- SCRIPT UTAMA & INTEGRASI CLOUD REAL-TIME -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // =========================================================================
+    // 1. SUMBER GAMBAR CITRA SATELIT MANDIRI (SELF-CONTAINED) & UNGGAHAN GURU
+    // =========================================================================
+    // Memuat ketiga gambar citra satelit sesuai urutan kelompok:
+    // - Slot 1 (Kelompok 1 & 2): 1 dan 2_2.jpg
+    // - Slot 2 (Kelompok 3 & 4): 3 dan 4_2.jpg
+    // - Slot 3 (Kelompok 5 & 6): 5 dan 6_2.jpg
+    // Dilengkapi gambar satelit vektor presisi tinggi sebagai cadangan mandiri jika
+    // jalur file lokal tidak terbaca di browser pratinjau.
+    const DEFAULT_SATELLITE_SVGS = {
+      1: `data:image/svg+xml;utf8,${encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720">
+          <defs>
+            <pattern id="urban1" width="28" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(14)">
+              <rect x="2" y="2" width="11" height="9" fill="#8b5a3c" stroke="#3e2723" stroke-width="0.8"/>
+              <rect x="15" y="3" width="10" height="8" fill="#a16642" stroke="#3e2723" stroke-width="0.8"/>
+              <rect x="3" y="13" width="12" height="9" fill="#795548" stroke="#3e2723" stroke-width="0.8"/>
+              <rect x="17" y="13" width="9" height="9" fill="#bcaaa4" stroke="#3e2723" stroke-width="0.8"/>
+            </pattern>
+            <pattern id="crop1" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(-20)">
+              <rect width="16" height="16" fill="#2e4d23"/>
+              <line x1="0" y1="4" x2="16" y2="4" stroke="#4a7c36" stroke-width="2"/>
+              <line x1="0" y1="12" x2="16" y2="12" stroke="#1b3314" stroke-width="2"/>
+            </pattern>
+          </defs>
+          <!-- Dasar Tanah & Vegetasi -->
+          <rect width="1200" height="720" fill="#4f5d46"/>
+          <!-- Permukiman Padat Sisi Kanan -->
+          <polygon points="620,0 1200,0 1200,560 720,440 650,240" fill="url(#urban1)"/>
+          <!-- Permukiman Kiri Bawah -->
+          <polygon points="0,480 460,340 520,520 220,720 0,720" fill="url(#urban1)"/>
+          <!-- Lahan Pertanian / Kebun Sisi Bawah -->
+          <polygon points="480,450 960,550 1120,720 340,720" fill="url(#crop1)"/>
+          <!-- Lahan Terbuka Tanah Cokelat Kiri Atas -->
+          <polygon points="60,10 290,10 170,220 10,130" fill="#8d6e53" stroke="#5d4037" stroke-width="3"/>
+          <!-- Kompleks Bangunan Pabrik / Gudang Atap Besar -->
+          <g transform="translate(335, 18) rotate(38)">
+            <rect x="0" y="0" width="210" height="145" fill="#6d4c41" stroke="#261c1a" stroke-width="3"/>
+            <rect x="12" y="14" width="186" height="115" fill="#8d7b68" stroke="#4e342e" stroke-width="2"/>
+            <line x1="12" y1="52" x2="198" y2="52" stroke="#d7ccc8" stroke-width="2"/>
+            <line x1="12" y1="90" x2="198" y2="90" stroke="#d7ccc8" stroke-width="2"/>
+            <rect x="0" y="160" width="165" height="42" fill="#cfd8dc" stroke="#37474f" stroke-width="2"/>
+          </g>
+          <!-- Kompleks Gedung Sekolah / Perkantoran Tengah -->
+          <rect x="430" y="210" width="75" height="35" fill="#cfd8dc" stroke="#37474f" stroke-width="1.5"/>
+          <rect x="480" y="255" width="85" height="48" fill="#eceff1" stroke="#37474f" stroke-width="1.5"/>
+          <rect x="340" y="285" width="95" height="45" fill="#6d4c41" stroke="#261c1a" stroke-width="1.5"/>
+          <!-- Aliran Sungai & Bendung (Weir) -->
+          <path d="M 430,0 Q 590,120 690,230 T 620,390 L 1200,610 L 1200,680 L 560,440 Q 430,450 60,720 L 0,720 L 0,660 Q 370,410 520,360 Q 640,250 560,150 L 380,0 Z" fill="#607d8b"/>
+          <!-- Buih Air Putih di Bendung & Aliran Deras -->
+          <polygon points="525,355 585,375 555,455 485,435" fill="#eceff1" opacity="0.92"/>
+          <path d="M 80,695 Q 340,490 515,435" stroke="#ffffff" stroke-width="14" fill="none" opacity="0.75" stroke-dasharray="18,6"/>
+          <path d="M 940,565 Q 1060,605 1170,645" stroke="#ffffff" stroke-width="16" fill="none" opacity="0.7" stroke-dasharray="22,8"/>
+          <!-- Jalan Raya Utama & Jembatan -->
+          <path d="M 0,530 L 640,0" stroke="#37474f" stroke-width="11" fill="none"/>
+          <path d="M 0,530 L 640,0" stroke="#cfd8dc" stroke-width="1.5" stroke-dasharray="10,10" fill="none"/>
+          <!-- Deretan Vegetasi / Pohon di Sepanjang Sungai & Jalan -->
+          <g fill="#1b4332">
+            <circle cx="460" cy="165" r="18"/><circle cx="435" cy="190" r="20"/><circle cx="405" cy="215" r="17"/>
+            <circle cx="715" cy="485" r="22"/><circle cx="765" cy="505" r="20"/><circle cx="995" cy="605" r="26"/><circle cx="1045" cy="635" r="24"/>
+          </g>
+          <!-- Label Skala & Arah Utara (Google Earth Style) -->
+          <text x="16" y="692" fill="#ffffff" font-family="Arial, sans-serif" font-size="22" font-weight="bold" opacity="0.9">Citra Wilayah 1 (Kelompok 1 &amp; 2)</text>
+          <g transform="translate(1155, 675)">
+            <polygon points="0,-24 8,6 0,0 -8,6" fill="#ffffff"/>
+            <text x="0" y="22" fill="#ffffff" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle">N</text>
+          </g>
+          <path d="M 975,705 L 975,713 L 1185,713 L 1185,705" stroke="#ffffff" stroke-width="2" fill="none"/>
+          <text x="1080" y="707" fill="#ffffff" font-family="Arial, sans-serif" font-size="12" text-anchor="middle">300 ft</text>
+        </svg>
+      `)}`,
+      2: `data:image/svg+xml;utf8,${encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720">
+          <defs>
+            <pattern id="urban2" width="32" height="28" patternUnits="userSpaceOnUse">
+              <rect x="2" y="2" width="13" height="10" fill="#795548" stroke="#261c1a" stroke-width="0.9"/>
+              <rect x="17" y="4" width="12" height="9" fill="#9e9e9e" stroke="#261c1a" stroke-width="0.9"/>
+              <rect x="3" y="15" width="14" height="11" fill="#8d6e63" stroke="#261c1a" stroke-width="0.9"/>
+              <rect x="19" y="16" width="11" height="10" fill="#a1887f" stroke="#261c1a" stroke-width="0.9"/>
+            </pattern>
+          </defs>
+          <!-- Dasar Lahan -->
+          <rect width="1200" height="720" fill="#6b5e4c"/>
+          <!-- Permukiman Padat Sisi Kiri -->
+          <rect x="0" y="0" width="445" height="720" fill="url(#urban2)"/>
+          <!-- Permukiman Sisi Atas -->
+          <rect x="445" y="0" width="755" height="150" fill="url(#urban2)"/>
+          <!-- Bangunan Berbentuk Huruf U / Persegi Berhalaman Tengah -->
+          <rect x="215" y="200" width="115" height="65" fill="none" stroke="#8d3b32" stroke-width="14"/>
+          <rect x="485" y="30" width="105" height="85" fill="none" stroke="#5d4037" stroke-width="14"/>
+          <!-- Barak / Gedung Sekolah Memanjang Berjajar -->
+          <g fill="#8d3b32" stroke="#3e2723" stroke-width="1.5">
+            <rect x="690" y="65" width="90" height="16"/>
+            <rect x="690" y="81" width="18" height="58"/><rect x="726" y="81" width="18" height="58"/><rect x="762" y="81" width="18" height="58"/>
+          </g>
+          <g fill="#4e4b47" stroke="#212121" stroke-width="1.5">
+            <rect x="900" y="85" width="120" height="14"/>
+            <rect x="900" y="99" width="18" height="62"/><rect x="934" y="99" width="18" height="62"/><rect x="968" y="99" width="18" height="62"/><rect x="1002" y="99" width="18" height="62"/>
+          </g>
+          <!-- Lapangan Upacara Aspal & Lapangan Tanah -->
+          <rect x="675" y="160" width="115" height="75" fill="#757575" stroke="#424242" stroke-width="2"/>
+          <rect x="920" y="175" width="185" height="135" fill="#9c8265" stroke="#6d5843" stroke-width="2"/>
+          <!-- Rimbunan Hutan Kota / Pepohonan Rapat -->
+          <path d="M 465,280 Q 650,275 860,410 L 1180,620 L 1120,720 L 465,720 Z" fill="#14361d"/>
+          <g fill="#1b4d28">
+            <circle cx="520" cy="340" r="45"/><circle cx="590" cy="360" r="50"/><circle cx="670" cy="390" r="48"/>
+            <circle cx="510" cy="430" r="46"/><circle cx="505" cy="540" r="52"/><circle cx="530" cy="640" r="55"/>
+            <circle cx="880" cy="475" r="42"/><circle cx="960" cy="525" r="44"/><circle cx="1040" cy="575" r="42"/>
+          </g>
+          <!-- Lapangan Sepak Bola Rumput Sintetis Hijau Cerah -->
+          <g transform="translate(625, 440) rotate(30)">
+            <rect x="0" y="0" width="95" height="135" fill="#2e7d32" stroke="#ffffff" stroke-width="2"/>
+            <line x1="0" y1="67.5" x2="95" y2="67.5" stroke="#ffffff" stroke-width="1.5"/>
+            <circle cx="47.5" cy="67.5" r="14" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+            <rect x="24" y="0" width="47" height="20" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+            <rect x="24" y="115" width="47" height="20" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+            <!-- Tribun & Lapangan Tanah di Sebelahnya -->
+            <rect x="98" y="8" width="16" height="118" fill="#d84315"/>
+            <rect x="118" y="0" width="165" height="195" fill="#9c8265" stroke="#795548" stroke-width="2"/>
+          </g>
+          <!-- Jalan Raya Lurus Utara-Selatan -->
+          <line x1="450" y1="0" x2="450" y2="720" stroke="#263238" stroke-width="14"/>
+          <line x1="450" y1="0" x2="450" y2="720" stroke="#eceff1" stroke-width="1.5" stroke-dasharray="12,12"/>
+          <!-- Label Skala & Arah Utara -->
+          <text x="16" y="692" fill="#ffffff" font-family="Arial, sans-serif" font-size="22" font-weight="bold" opacity="0.9">Citra Wilayah 2 (Kelompok 3 &amp; 4)</text>
+          <g transform="translate(1155, 675)">
+            <polygon points="0,-24 8,6 0,0 -8,6" fill="#ffffff"/>
+            <text x="0" y="22" fill="#ffffff" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle">N</text>
+          </g>
+          <path d="M 975,705 L 975,713 L 1185,713 L 1185,705" stroke="#ffffff" stroke-width="2" fill="none"/>
+          <text x="1080" y="707" fill="#ffffff" font-family="Arial, sans-serif" font-size="12" text-anchor="middle">300 ft</text>
+        </svg>
+      `)}`,
+      3: `data:image/svg+xml;utf8,${encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720">
+          <defs>
+            <pattern id="urban3" width="28" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(-12)">
+              <rect x="2" y="2" width="11" height="9" fill="#8d5b4c" stroke="#2c1d18" stroke-width="0.8"/>
+              <rect x="15" y="3" width="10" height="8" fill="#a16e5e" stroke="#2c1d18" stroke-width="0.8"/>
+              <rect x="3" y="13" width="12" height="9" fill="#6d4c41" stroke="#2c1d18" stroke-width="0.8"/>
+              <rect x="17" y="13" width="9" height="9" fill="#bdbdbd" stroke="#2c1d18" stroke-width="0.8"/>
+            </pattern>
+          </defs>
+          <!-- Latar Permukiman Perkotaan Padat -->
+          <rect width="1200" height="720" fill="url(#urban3)"/>
+          <!-- Area Kompleks Olahraga & Pusat Perbelanjaan -->
+          <polygon points="310,60 660,120 620,460 360,640 130,520 260,210" fill="#424242"/>
+          <!-- Lapangan Hijau & Lapangan Tenis di Kiri Atas Stadion -->
+          <rect x="335" y="80" width="105" height="105" fill="#4b6b3c" stroke="#2e4225" stroke-width="2"/>
+          <rect x="330" y="195" width="52" height="36" fill="#2e5a44" stroke="#ffffff" stroke-width="1.2"/>
+          <rect x="435" y="120" width="36" height="58" fill="#37474f" stroke="#ffffff" stroke-width="1.2"/>
+          <!-- Stadion Atletik Oval (Lintasan Lari Merah Bata + Lapangan Hijau + Tribun Beratap) -->
+          <g transform="translate(515, 285)">
+            <!-- Tribun Luar -->
+            <ellipse cx="0" cy="0" rx="118" ry="142" fill="#bdbdbd" stroke="#616161" stroke-width="3"/>
+            <!-- Lintasan Atletik Merah Bata -->
+            <ellipse cx="0" cy="0" rx="92" ry="118" fill="#b85d43" stroke="#ffffff" stroke-width="1.5"/>
+            <!-- Lapangan Sepak Bola Tengah -->
+            <rect x="-54" y="-82" width="108" height="164" fill="#4d7c3f" stroke="#ffffff" stroke-width="1.5"/>
+            <line x1="-54" y1="0" x2="54" y2="0" stroke="#ffffff" stroke-width="1.2"/>
+            <circle cx="0" cy="0" r="16" fill="none" stroke="#ffffff" stroke-width="1.2"/>
+            <!-- Atap Tribun Barat Melengkung -->
+            <path d="M -52,-115 Q -135,0 -52,115 L -65,-115 Z" fill="#9e9e9e" stroke="#424242" stroke-width="2"/>
+          </g>
+          <!-- Gedung Pusat Perbelanjaan / Mal Besar (Kiri Bawah Stadion) -->
+          <g transform="translate(265, 375) rotate(32)">
+            <rect x="0" y="0" width="245" height="155" rx="18" fill="#cfd8dc" stroke="#37474f" stroke-width="3"/>
+            <rect x="45" y="25" width="140" height="85" fill="#eceff1" stroke="#607d8b" stroke-width="2"/>
+            <rect x="195" y="15" width="38" height="125" fill="#90a4ae" stroke="#455a64" stroke-width="2"/>
+          </g>
+          <!-- Masjid Agung dengan Kubah Putih Besar (Kanan Bawah) -->
+          <g transform="translate(815, 565)">
+            <polygon points="-45,-35 65,-15 45,75 -65,55" fill="#6d4c41" stroke="#261c1a" stroke-width="2"/>
+            <circle cx="22" cy="18" r="22" fill="#f5f5f5" stroke="#757575" stroke-width="2"/>
+            <circle cx="22" cy="18" r="6" fill="#bdbdbd"/>
+          </g>
+          <!-- Jaringan Jalan Perkotaan & Bundaran -->
+          <path d="M 110,560 L 340,720" stroke="#263238" stroke-width="16" fill="none"/>
+          <path d="M 410,720 L 660,390 L 1200,450" stroke="#263238" stroke-width="13" fill="none"/>
+          <path d="M 740,720 L 840,390 L 920,0" stroke="#263238" stroke-width="12" fill="none"/>
+          <circle cx="950" cy="422" r="14" fill="#2e7d32" stroke="#eceff1" stroke-width="4"/>
+          <!-- Sabuk Hijau Pepohonan -->
+          <g fill="#1b4332">
+            <circle cx="315" cy="270" r="24"/><circle cx="285" cy="305" r="26"/><circle cx="265" cy="340" r="22"/>
+            <circle cx="620" cy="165" r="22"/><circle cx="665" cy="195" r="24"/><circle cx="715" cy="225" r="22"/>
+          </g>
+          <!-- Label Skala & Arah Utara -->
+          <text x="16" y="692" fill="#ffffff" font-family="Arial, sans-serif" font-size="22" font-weight="bold" opacity="0.9">Citra Wilayah 3 (Kelompok 5 &amp; 6)</text>
+          <g transform="translate(1155, 675)">
+            <polygon points="0,-24 8,6 0,0 -8,6" fill="#ffffff"/>
+            <text x="0" y="22" fill="#ffffff" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle">N</text>
+          </g>
+          <path d="M 975,705 L 975,713 L 1185,713 L 1185,705" stroke="#ffffff" stroke-width="2" fill="none"/>
+          <text x="1080" y="707" fill="#ffffff" font-family="Arial, sans-serif" font-size="12" text-anchor="middle">500 ft</text>
+        </svg>
+      `)}`
+    };
+
+    const IMAGE_SOURCES = {
+      1: DEFAULT_SATELLITE_SVGS[1],
+      2: DEFAULT_SATELLITE_SVGS[2],
+      3: DEFAULT_SATELLITE_SVGS[3]
+    };
+
+    // Memuat file gambar asli yang dilampirkan sesuai urutan kelompok tanpa mengubah kualitas/desainnya
+    function loadAttachedGroupImages() {
+      const attachedFiles = [
+        { slot: 1, name: '1 dan 2_2.jpg' },
+        { slot: 2, name: '3 dan 4_2.jpg' },
+        { slot: 3, name: '5 dan 6_2.jpg' }
+      ];
+
+      attachedFiles.forEach(({ slot, name }) => {
+        const probeImg = new Image();
+        probeImg.onload = () => {
+          // Gunakan URL file asli secara langsung agar resolusi, warna, dan desain 100% tidak berubah
+          IMAGE_SOURCES[slot] = name;
+          const prevEl = document.getElementById(`previewTeacherImg${slot}`);
+          if (prevEl) prevEl.src = name;
+          const statusEl = document.getElementById(`imgStatus${slot}`);
+          if (statusEl) statusEl.textContent = `${name} Aktif ✓`;
+
+          // Jika siswa sedang membuka lembar kerja yang memakai slot gambar ini, perbarui langsung
+          if (currentView === 'workspace') {
+            const activeInfo = getGroupImageInfo(selectedGroup);
+            if (activeInfo.src === name) {
+              const wsImg = document.getElementById('satelliteImage');
+              if (wsImg && wsImg.src !== name) {
+                wsImg.onload = () => {
+                  resizeCanvas();
+                  redrawCanvas();
+                };
+                wsImg.src = name;
+              }
+            }
+          }
+        };
+        probeImg.onerror = () => {
+          // Pertahankan gambar bawaan jika file lokal tidak tersedia di konteks pratinjau
+          const prevEl = document.getElementById(`previewTeacherImg${slot}`);
+          if (prevEl && !prevEl.src) prevEl.src = IMAGE_SOURCES[slot];
+        };
+        probeImg.src = name;
+      });
+    }
+
+    // Mengunggah file gambar citra asli dari perangkat guru dan menyinkronkannya ke semua murid
+    window.handleUploadOriginalImage = function (slotNumber, event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function (e) {
+        const originalDataUrl = e.target.result;
+        IMAGE_SOURCES[slotNumber] = originalDataUrl;
+
+        const prevEl = document.getElementById(`previewTeacherImg${slotNumber}`);
+        if (prevEl) prevEl.src = originalDataUrl;
+
+        const statusEl = document.getElementById(`imgStatus${slotNumber}`);
+        if (statusEl) statusEl.textContent = 'File Asli Aktif ✓';
+
+        try {
+          if (db && currentUser) {
+            // Memecah data gambar menjadi potongan-potongan (chunk) agar foto resolusi tinggi
+            // tetap tersimpan utuh 100% tanpa kompresi maupun batas ukuran dokumen Firestore
+            const chunkSize = 700000;
+            const totalChunks = Math.ceil(originalDataUrl.length / chunkSize);
+            for (let i = 0; i < totalChunks; i++) {
+              const chunkData = originalDataUrl.slice(i * chunkSize, (i + 1) * chunkSize);
+              const chunkRef = doc(db, 'artifacts', appId, 'public', 'data', 'lkpd_images', `slot_${slotNumber}_part_${i}`);
+              await setDoc(chunkRef, {
+                slot: slotNumber,
+                part: i,
+                totalParts: totalChunks,
+                data: chunkData,
+                updatedAt: Date.now()
+              });
+            }
+          }
+        } catch (err) {
+          console.warn('Gambar asli aktif di sesi ini:', err);
+        }
+
+        showToast(`Gambar citra asli untuk Kelompok ${slotNumber * 2 - 1} & ${slotNumber * 2} berhasil dimuat!`, 'success');
+      };
+      reader.readAsDataURL(file);
+    };
+
+    function getGroupImageInfo(groupNum) {
+      if (groupNum === 1 || groupNum === 2) {
+        return { src: IMAGE_SOURCES[1], label: 'Citra Wilayah 1 (Kelompok 1 & 2)' };
+      } else if (groupNum === 3 || groupNum === 4) {
+        return { src: IMAGE_SOURCES[2], label: 'Citra Wilayah 2 (Kelompok 3 & 4)' };
+      } else {
+        return { src: IMAGE_SOURCES[3], label: 'Citra Wilayah 3 (Kelompok 5 & 6)' };
+      }
+    }
+
+    // =========================================================================
+    // 2. STATE APLIKASI & KONFIGURASI FIREBASE REAL-TIME
+    // =========================================================================
+    const CLASSES = [
+      {
+        id: 'X-1',
+        name: 'Kelas X-1',
+        colorClass: 'from-orange-500 to-amber-500',
+        borderClass: 'border-orange-200 dark:border-orange-800/60',
+        badgeBg: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-200',
+        iconBg: 'bg-orange-500 text-white'
+      },
+      {
+        id: 'X-2',
+        name: 'Kelas X-2',
+        colorClass: 'from-teal-500 to-emerald-500',
+        borderClass: 'border-teal-200 dark:border-teal-800/60',
+        badgeBg: 'bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-200',
+        iconBg: 'bg-teal-500 text-white'
+      },
+      {
+        id: 'X-3',
+        name: 'Kelas X-3',
+        colorClass: 'from-purple-600 to-indigo-600',
+        borderClass: 'border-purple-200 dark:border-purple-800/60',
+        badgeBg: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-200',
+        iconBg: 'bg-purple-600 text-white'
+      }
+    ];
+
+    const GROUP_TOP_COLORS = [
+      'border-t-blue-500',
+      'border-t-emerald-500',
+      'border-t-amber-500',
+      'border-t-purple-500',
+      'border-t-rose-500',
+      'border-t-cyan-500'
+    ];
+
+    const GROUP_BADGE_COLORS = [
+      'bg-blue-600 text-white',
+      'bg-emerald-600 text-white',
+      'bg-amber-500 text-slate-900',
+      'bg-purple-600 text-white',
+      'bg-rose-600 text-white',
+      'bg-cyan-600 text-white'
+    ];
+
+    let db = null;
+    let auth = null;
+    let currentUser = null;
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'lkpd-geografi-citra';
+
+    // State Lokal
+    let classSettings = { 'X-1': true, 'X-2': true, 'X-3': true };
+    let allGroupsData = {}; // key: "X-1_1" -> data kelompok
+    let currentView = 'home';
+    let selectedClass = 'X-1';
+    let selectedGroup = 1;
+    let isTeacherLoggedIn = false;
+    let teacherFilterClass = 'X-1';
+    let saveTimer = null;
+
+    // State Kanvas Paint
+    let strokes = [];
+    let isDrawing = false;
+    let currentTool = 'pen';
+    let currentColor = '#ef4444';
+    let currentStrokeWidth = 5;
+    let startX = 0;
+    let startY = 0;
+    let activeStroke = null;
+    let nextLabelNumber = 1;
+
+    // Membuat struktur data default kelompok
+    function createEmptyGroupData(classId, groupNum) {
+      return {
+        classId,
+        groupNum,
+        groupName: `Kelompok ${groupNum}`,
+        members: '',
+        strokes: '[]',
+        rows: Array.from({ length: 5 }, () => ({
+          objek: '',
+          warna: '',
+          rona: '',
+          bentuk: '',
+          ukuran: '',
+          tekstur: '',
+          pola: '',
+          bayangan: '',
+          situs: '',
+          asosiasi: ''
+        })),
+        essay1: '',
+        essay2: '',
+        essay3: '',
+        updatedAt: Date.now()
+      };
+    }
+
+    function getGroupRecord(classId, groupNum) {
+      const key = `${classId}_${groupNum}`;
+      if (!allGroupsData[key]) {
+        allGroupsData[key] = createEmptyGroupData(classId, groupNum);
+      }
+      return allGroupsData[key];
+    }
+
+    // =========================================================================
+    // 3. INISIALISASI FIREBASE & LISTENER REAL-TIME
+    // =========================================================================
+    async function initCloudSync() {
+      const syncDot = document.getElementById('syncDot');
+      const syncText = document.getElementById('syncText');
+
+      try {
+        if (typeof __firebase_config === 'undefined') {
+          throw new Error('Konfigurasi cloud belum tersedia, berjalan dalam mode sesi lokal.');
+        }
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        // Wajib autentikasi terlebih dahulu sebelum query Firestore
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          const cred = await signInWithCustomToken(auth, __initial_auth_token);
+          currentUser = cred.user;
+        } else {
+          const cred = await signInAnonymously(auth);
+          currentUser = cred.user;
+        }
+
+        if (!currentUser) return;
+
+        syncDot.className = 'w-2 h-2 rounded-full bg-emerald-300';
+        syncText.textContent = 'Terhubung Online';
+
+        // Listener Pengaturan Kelas (Buka/Tutup)
+        const settingsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'lkpd_settings', 'classes');
+        onSnapshot(
+          settingsDocRef,
+          (snapshot) => {
+            if (snapshot.exists()) {
+              const data = snapshot.data();
+              classSettings = {
+                'X-1': data['X-1'] !== undefined ? data['X-1'] : true,
+                'X-2': data['X-2'] !== undefined ? data['X-2'] : true,
+                'X-3': data['X-3'] !== undefined ? data['X-3'] : true
+              };
+            }
+            renderHomeClasses();
+            if (isTeacherLoggedIn) renderTeacherClassToggles();
+          },
+          (err) => {
+            console.error('Error listener settings:', err);
+          }
+        );
+
+        // Listener Data Kelompok Real-Time (Semua Kelas & Kelompok)
+        const groupsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'lkpd_groups');
+        onSnapshot(
+          groupsColRef,
+          (snapshot) => {
+            snapshot.forEach((docSnap) => {
+              const gData = docSnap.data();
+              if (gData && gData.classId && gData.groupNum) {
+                const key = `${gData.classId}_${gData.groupNum}`;
+                allGroupsData[key] = gData;
+              }
+            });
+
+            if (currentView === 'groups') renderGroupCards();
+            if (currentView === 'teacher') renderTeacherMonitoring();
+          },
+          (err) => {
+            console.error('Error listener groups:', err);
+          }
+        );
+
+        // Listener Gambar Citra Asli yang diunggah Guru (mendukung foto resolusi penuh)
+        const imagesColRef = collection(db, 'artifacts', appId, 'public', 'data', 'lkpd_images');
+        onSnapshot(
+          imagesColRef,
+          (snapshot) => {
+            const groupedParts = {};
+            snapshot.forEach((docSnap) => {
+              const d = docSnap.data();
+              if (d && d.slot && d.data !== undefined) {
+                if (!groupedParts[d.slot]) groupedParts[d.slot] = { total: d.totalParts || 1, parts: {} };
+                groupedParts[d.slot].parts[d.part || 0] = d.data;
+              }
+            });
+
+            Object.keys(groupedParts).forEach((slotStr) => {
+              const slotNum = parseInt(slotStr);
+              const info = groupedParts[slotNum];
+              let combined = '';
+              let complete = true;
+              for (let i = 0; i < info.total; i++) {
+                if (info.parts[i] === undefined) {
+                  complete = false;
+                  break;
+                }
+                combined += info.parts[i];
+              }
+              if (complete && combined) {
+                IMAGE_SOURCES[slotNum] = combined;
+                const prevEl = document.getElementById(`previewTeacherImg${slotNum}`);
+                if (prevEl) prevEl.src = combined;
+                const statusEl = document.getElementById(`imgStatus${slotNum}`);
+                if (statusEl) statusEl.textContent = 'File Asli Aktif ✓';
+              }
+            });
+          },
+          (err) => {
+            console.error('Error listener images:', err);
+          }
+        );
+      } catch (err) {
+        console.warn('Mode fallback aktif:', err.message);
+        if (syncDot) syncDot.className = 'w-2 h-2 rounded-full bg-amber-300';
+        if (syncText) syncText.textContent = 'Mode Sesi Aktif';
+      }
+    }
+
+    // =========================================================================
+    // 4. NAVIGASI ANTAR HALAMAN
+    // =========================================================================
+    window.navigateTo = function (viewName) {
+      currentView = viewName;
+      const sections = ['home', 'groups', 'workspace', 'presentation', 'teacher'];
+      sections.forEach((sec) => {
+        const el = document.getElementById(`view-${sec}`);
+        if (el) el.classList.toggle('hidden', sec !== viewName);
+      });
+
+      // Tombol Beranda disembunyikan saat berada di Beranda
+      const btnHome = document.getElementById('btnNavHome');
+      if (btnHome) {
+        if (viewName === 'home') {
+          btnHome.classList.add('hidden');
+          btnHome.classList.remove('flex');
+        } else {
+          btnHome.classList.remove('hidden');
+          btnHome.classList.add('flex');
+        }
+      }
+
+      if (viewName === 'home') renderHomeClasses();
+      if (viewName === 'groups') renderGroupCards();
+      if (viewName === 'teacher') {
+        document.getElementById('shareUrlInput').value = window.location.href;
+        [1, 2, 3].forEach((slot) => {
+          const prevEl = document.getElementById(`previewTeacherImg${slot}`);
+          if (prevEl) prevEl.src = IMAGE_SOURCES[slot];
+        });
+        renderTeacherClassToggles();
+        renderTeacherMonitoring();
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      lucide.createIcons();
+    };
+
+    // =========================================================================
+    // 5. RENDER BERANDA (PILIH KELAS)
+    // =========================================================================
+    function renderHomeClasses() {
+      const container = document.getElementById('classCardsContainer');
+      if (!container) return;
+
+      container.innerHTML = CLASSES.map((cls) => {
+        const isOpen = classSettings[cls.id] !== false;
+        return `
+          <div class="group relative rounded-2xl border ${cls.borderClass} bg-white dark:bg-slate-900 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between">
+            <div class="h-2.5 w-full bg-gradient-to-r ${cls.colorClass}"></div>
+            <div class="p-5 space-y-4">
+              <div class="flex items-center justify-between">
+                <div class="w-11 h-11 rounded-xl ${cls.iconBg} flex items-center justify-center font-extrabold text-base shadow-sm">
+                  ${cls.id}
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-bold ${isOpen ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300' : 'bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300'}">
+                  ${isOpen ? '● Dibuka' : '● Ditutup'}
+                </span>
+              </div>
+
+              <div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">${cls.name}</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">6 Kelompok • Interpretasi Citra Penginderaan Jauh</p>
+              </div>
+
+              <button onclick="selectClass('${cls.id}')" class="w-full py-2.5 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition cursor-pointer ${
+                isOpen
+                  ? `bg-gradient-to-r ${cls.colorClass} text-white shadow hover:opacity-95 active:scale-98`
+                  : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed'
+              }">
+                <span>${isOpen ? 'Masuk Kelas' : 'Kelas Ditutup Guru'}</span>
+                <i data-lucide="${isOpen ? 'arrow-right' : 'lock'}" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    window.selectClass = function (classId) {
+      if (classSettings[classId] === false) {
+        showToast(`Akses ${classId} sedang ditutup oleh Guru.`, 'error');
+        return;
+      }
+      selectedClass = classId;
+      document.getElementById('selectedClassBadge').textContent = `KELAS ${classId}`;
+      navigateTo('groups');
+    };
+
+    // =========================================================================
+    // 6. RENDER DAFTAR 6 KELOMPOK
+    // =========================================================================
+    function countFilledObjects(groupData) {
+      if (!groupData || !Array.isArray(groupData.rows)) return 0;
+      return groupData.rows.filter((r) => r.objek && r.objek.trim().length > 0).length;
+    }
+
+    function renderGroupCards() {
+      const container = document.getElementById('groupCardsContainer');
+      if (!container) return;
+
+      let html = '';
+      for (let g = 1; g <= 6; g++) {
+        const data = getGroupRecord(selectedClass, g);
+        const filledCount = countFilledObjects(data);
+        const percent = Math.round((filledCount / 5) * 100);
+        const imgInfo = getGroupImageInfo(g);
+        const hasStarted = filledCount > 0 || (data.members && data.members.trim().length > 0);
+
+        html += `
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-t-4 ${GROUP_TOP_COLORS[g - 1]} rounded-2xl p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <span class="w-9 h-9 rounded-full ${GROUP_BADGE_COLORS[g - 1]} font-extrabold text-sm flex items-center justify-center shadow-sm">${g}</span>
+                  <div>
+                    <h3 class="font-bold text-base text-slate-900 dark:text-white leading-tight">${escapeHtml(data.groupName || 'Kelompok ' + g)}</h3>
+                    <span class="text-[11px] text-slate-500 dark:text-slate-400">${imgInfo.label}</span>
+                  </div>
+                </div>
+              </div>
+
+              <p class="text-xs text-slate-600 dark:text-slate-300 line-clamp-1">
+                <span class="font-semibold">Anggota:</span> ${data.members ? escapeHtml(data.members) : '<span class="italic text-slate-400">Belum diisi</span>'}
+              </p>
+
+              <!-- Bilah Progres -->
+              <div class="space-y-1.5 pt-1">
+                <div class="flex justify-between text-xs font-semibold">
+                  <span class="text-slate-500 dark:text-slate-400">Progres Identifikasi</span>
+                  <span class="text-blue-600 dark:text-blue-400">${filledCount}/5 objek terisi</span>
+                </div>
+                <div class="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-300" style="width: ${percent}%"></div>
+                </div>
+              </div>
+            </div>
+
+            <button onclick="openWorkspace(${g})" class="w-full py-2.5 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition cursor-pointer ${
+              hasStarted
+                ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm'
+                : 'bg-blue-600 hover:bg-blue-500 text-white shadow-sm'
+            }">
+              <span>${hasStarted ? 'Lanjutkan' : 'Mulai'}</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 7. LEMBAR KERJA KELOMPOK & KANVAS PAINT INTERAKTIF
+    // =========================================================================
+    window.openWorkspace = function (groupNum) {
+      selectedGroup = groupNum;
+      const data = getGroupRecord(selectedClass, selectedGroup);
+      const imgInfo = getGroupImageInfo(selectedGroup);
+
+      document.getElementById('wsClassBadge').textContent = selectedClass;
+      document.getElementById('wsImageLabel').textContent = imgInfo.label;
+      document.getElementById('wsTitle').textContent = `Lembar Kerja Kelompok ${selectedGroup}`;
+
+      // Isi form identitas
+      document.getElementById('inputGroupName').value = data.groupName || `Kelompok ${selectedGroup}`;
+      document.getElementById('inputGroupMembers').value = data.members || '';
+
+      // Isi form esai
+      document.getElementById('essay1').value = data.essay1 || '';
+      document.getElementById('essay2').value = data.essay2 || '';
+      document.getElementById('essay3').value = data.essay3 || '';
+
+      // Render 5 baris tabel interpretasi
+      renderInterpretationTable(data.rows);
+
+      // Muat coretan kanvas
+      try {
+        strokes = JSON.parse(data.strokes || '[]');
+      } catch {
+        strokes = [];
+      }
+      // Hitung nomor label berikutnya
+      const numberStrokes = strokes.filter((s) => s.tool === 'number');
+      nextLabelNumber = numberStrokes.length + 1;
+
+      // Muat gambar satelit & sesuaikan ukuran kanvas
+      const imgEl = document.getElementById('satelliteImage');
+      imgEl.onload = () => {
+        resizeCanvas();
+        redrawCanvas();
+      };
+      imgEl.src = imgInfo.src;
+
+      navigateTo('workspace');
+    };
+
+    function renderInterpretationTable(rows) {
+      const tbody = document.getElementById('interpretationTableBody');
+      const colorOptions = [
+        { val: '', label: 'Pilih...' },
+        { val: 'Merah', label: '🔴 Merah' },
+        { val: 'Kuning', label: '🟡 Kuning' },
+        { val: 'Hijau', label: '🟢 Hijau' },
+        { val: 'Biru', label: '🔵 Biru' },
+        { val: 'Merah Muda', label: '🩷 Merah Muda' },
+        { val: 'Putih', label: '⚪ Putih' }
+      ];
+
+      tbody.innerHTML = rows
+        .map((row, idx) => {
+          const optsHtml = colorOptions
+            .map((o) => `<option value="${o.val}" ${row.warna === o.val ? 'selected' : ''}>${o.label}</option>`)
+            .join('');
+
+          return `
+            <tr class="bg-white dark:bg-slate-900 hover:bg-blue-50/40 dark:hover:bg-slate-800/50 transition">
+              <td class="p-2.5 border-r border-slate-200 dark:border-slate-700 font-bold text-center text-slate-700 dark:text-slate-200">${idx + 1}</td>
+              <td class="p-2 border-r border-slate-200 dark:border-slate-700">
+                <input type="text" data-row="${idx}" data-field="objek" value="${escapeHtml(row.objek)}" oninput="handleTableInput(this)" placeholder="Nama objek..." class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </td>
+              <td class="p-2 border-r border-slate-200 dark:border-slate-700">
+                <select data-row="${idx}" data-field="warna" onchange="handleTableInput(this)" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  ${optsHtml}
+                </select>
+              </td>
+              ${['rona', 'bentuk', 'ukuran', 'tekstur', 'pola', 'bayangan', 'situs', 'asosiasi']
+                .map(
+                  (field) => `
+                <td class="p-2 border-r last:border-r-0 border-slate-200 dark:border-slate-700">
+                  <textarea rows="2" data-row="${idx}" data-field="${field}" oninput="handleTableInput(this)" placeholder="Ciri ${field}..." class="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">${escapeHtml(row[field])}</textarea>
+                </td>
+              `
+                )
+                .join('')}
+            </tr>
+          `;
+        })
+        .join('');
+    }
+
+    window.handleTableInput = function (el) {
+      const rowIdx = parseInt(el.dataset.row);
+      const field = el.dataset.field;
+      const data = getGroupRecord(selectedClass, selectedGroup);
+      data.rows[rowIdx][field] = el.value;
+      scheduleSave();
+    };
+
+    // --- LOGIKA ALAT GAMBAR KANVAS (PAINT TOOLS) ---
+    const canvas = document.getElementById('annotationCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      const img = document.getElementById('satelliteImage');
+      if (!img || !img.clientWidth) return;
+      canvas.width = img.clientWidth;
+      canvas.height = img.clientHeight;
+      redrawCanvas();
+    }
+
+    window.addEventListener('resize', () => {
+      if (currentView === 'workspace') {
+        resizeCanvas();
+      }
+    });
+
+    window.selectTool = function (tool) {
+      currentTool = tool;
+      document.querySelectorAll('.tool-btn').forEach((btn) => {
+        if (btn.dataset.tool === tool) {
+          btn.className = 'tool-btn bg-amber-400 text-slate-900 font-semibold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition cursor-pointer';
+        } else {
+          btn.className = 'tool-btn bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 hover:bg-slate-200 dark:hover:bg-slate-600 transition cursor-pointer';
+        }
+      });
+    };
+
+    window.selectColor = function (color) {
+      currentColor = color;
+      document.querySelectorAll('.color-btn').forEach((btn) => {
+        if (btn.dataset.color === color) {
+          btn.classList.add('ring-2', 'ring-offset-2', 'ring-amber-400', 'dark:ring-offset-slate-800');
+        } else {
+          btn.classList.remove('ring-2', 'ring-offset-2', 'ring-amber-400', 'dark:ring-offset-slate-800');
+        }
+      });
+    };
+
+    function getNormalizedCoords(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: (clientX - rect.left) / rect.width,
+        y: (clientY - rect.top) / rect.height
+      };
+    }
+
+    function startDraw(e) {
+      e.preventDefault();
+      const pos = getNormalizedCoords(e);
+      isDrawing = true;
+      startX = pos.x;
+      startY = pos.y;
+
+      if (currentTool === 'number') {
+        strokes.push({
+          tool: 'number',
+          color: currentColor,
+          width: currentStrokeWidth,
+          x: pos.x,
+          y: pos.y,
+          label: String(nextLabelNumber++)
+        });
+        isDrawing = false;
+        redrawCanvas();
+        scheduleSave();
+        return;
+      }
+
+      activeStroke = {
+        tool: currentTool,
+        color: currentColor,
+        width: currentStrokeWidth,
+        points: [{ x: pos.x, y: pos.y }],
+        x1: pos.x,
+        y1: pos.y,
+        x2: pos.x,
+        y2: pos.y
+      };
+    }
+
+    function moveDraw(e) {
+      if (!isDrawing || !activeStroke) return;
+      e.preventDefault();
+      const pos = getNormalizedCoords(e);
+
+      if (activeStroke.tool === 'pen') {
+        activeStroke.points.push({ x: pos.x, y: pos.y });
+      } else {
+        activeStroke.x2 = pos.x;
+        activeStroke.y2 = pos.y;
+      }
+      redrawCanvas();
+      drawSingleStroke(ctx, activeStroke, canvas.width, canvas.height);
+    }
+
+    function endDraw() {
+      if (!isDrawing || !activeStroke) return;
+      isDrawing = false;
+      strokes.push(activeStroke);
+      activeStroke = null;
+      redrawCanvas();
+      scheduleSave();
+    }
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', moveDraw);
+    window.addEventListener('mouseup', endDraw);
+
+    canvas.addEventListener('touchstart', startDraw, { passive: false });
+    canvas.addEventListener('touchmove', moveDraw, { passive: false });
+    window.addEventListener('touchend', endDraw);
+
+    function drawSingleStroke(targetCtx, s, w, h) {
+      targetCtx.save();
+      targetCtx.strokeStyle = s.color;
+      targetCtx.fillStyle = s.color;
+      targetCtx.lineWidth = s.width;
+      targetCtx.lineCap = 'round';
+      targetCtx.lineJoin = 'round';
+
+      if (s.tool === 'pen' && s.points && s.points.length > 0) {
+        targetCtx.beginPath();
+        targetCtx.moveTo(s.points[0].x * w, s.points[0].y * h);
+        for (let i = 1; i < s.points.length; i++) {
+          targetCtx.lineTo(s.points[i].x * w, s.points[i].y * h);
+        }
+        targetCtx.stroke();
+      } else if (s.tool === 'rect') {
+        const rx = Math.min(s.x1, s.x2) * w;
+        const ry = Math.min(s.y1, s.y2) * h;
+        const rw = Math.abs(s.x2 - s.x1) * w;
+        const rh = Math.abs(s.y2 - s.y1) * h;
+        targetCtx.strokeRect(rx, ry, rw, rh);
+      } else if (s.tool === 'circle') {
+        const cx = ((s.x1 + s.x2) / 2) * w;
+        const cy = ((s.y1 + s.y2) / 2) * h;
+        const rx = (Math.abs(s.x2 - s.x1) / 2) * w;
+        const ry = (Math.abs(s.y2 - s.y1) / 2) * h;
+        targetCtx.beginPath();
+        targetCtx.ellipse(cx, cy, Math.max(rx, 2), Math.max(ry, 2), 0, 0, Math.PI * 2);
+        targetCtx.stroke();
+      } else if (s.tool === 'arrow') {
+        const x1 = s.x1 * w;
+        const y1 = s.y1 * h;
+        const x2 = s.x2 * w;
+        const y2 = s.y2 * h;
+        const headlen = 14 + s.width;
+        const angle = Math.atan2(y2 - y1, x2 - x1);
+
+        targetCtx.beginPath();
+        targetCtx.moveTo(x1, y1);
+        targetCtx.lineTo(x2, y2);
+        targetCtx.stroke();
+
+        targetCtx.beginPath();
+        targetCtx.moveTo(x2, y2);
+        targetCtx.lineTo(x2 - headlen * Math.cos(angle - Math.PI / 6), y2 - headlen * Math.sin(angle - Math.PI / 6));
+        targetCtx.lineTo(x2 - headlen * Math.cos(angle + Math.PI / 6), y2 - headlen * Math.sin(angle + Math.PI / 6));
+        targetCtx.closePath();
+        targetCtx.fill();
+      } else if (s.tool === 'number') {
+        const cx = s.x * w;
+        const cy = s.y * h;
+        targetCtx.beginPath();
+        targetCtx.arc(cx, cy, 15, 0, Math.PI * 2);
+        targetCtx.fill();
+        targetCtx.lineWidth = 2;
+        targetCtx.strokeStyle = '#0f172a';
+        targetCtx.stroke();
+
+        targetCtx.fillStyle = s.color === '#ffffff' || s.color === '#facc15' ? '#0f172a' : '#ffffff';
+        targetCtx.font = 'bold 14px sans-serif';
+        targetCtx.textAlign = 'center';
+        targetCtx.textBaseline = 'middle';
+        targetCtx.fillText(s.label, cx, cy);
+      }
+
+      targetCtx.restore();
+    }
+
+    function redrawCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      strokes.forEach((s) => drawSingleStroke(ctx, s, canvas.width, canvas.height));
+    }
+
+    window.undoCanvas = function () {
+      if (strokes.length === 0) return;
+      const removed = strokes.pop();
+      if (removed && removed.tool === 'number' && nextLabelNumber > 1) {
+        nextLabelNumber--;
+      }
+      redrawCanvas();
+      scheduleSave();
+    };
+
+    window.confirmClearCanvas = function () {
+      document.getElementById('modalConfirmClear').classList.remove('hidden');
+    };
+
+    window.executeClearCanvas = function () {
+      strokes = [];
+      nextLabelNumber = 1;
+      redrawCanvas();
+      scheduleSave();
+      document.getElementById('modalConfirmClear').classList.add('hidden');
+      showToast('Kanvas citra telah dibersihkan.', 'info');
+    };
+
+    // Menghasilkan gambar gabungan (Citra Asli + Coretan Siswa) untuk Presentasi & PDF
+    // Menggunakan format PNG tanpa kompresi agar kualitas gambar citra asli tetap terjaga 100%
+    function renderCompositeImagePromise(imgSrc, strokeList) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = img.naturalWidth;
+          tempCanvas.height = img.naturalHeight;
+          const tCtx = tempCanvas.getContext('2d');
+          tCtx.drawImage(img, 0, 0, tempCanvas.width, tempCanvas.height);
+
+          // Skala ketebalan garis agar proporsional pada resolusi asli
+          const scaleFactor = tempCanvas.width / 800;
+          strokeList.forEach((s) => {
+            const scaledStroke = { ...s, width: (s.width || 4) * scaleFactor };
+            drawSingleStroke(tCtx, scaledStroke, tempCanvas.width, tempCanvas.height);
+          });
+
+          resolve(tempCanvas.toDataURL('image/png'));
+        };
+        img.onerror = () => resolve(imgSrc);
+        img.src = imgSrc;
+      });
+    }
+
+    // =========================================================================
+    // 8. PENYIMPANAN OTOMATIS KE CLOUD FIRESTORE
+    // =========================================================================
+    window.scheduleSave = function () {
+      const statusEl = document.getElementById('wsSaveStatus');
+      if (statusEl) {
+        statusEl.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Menyimpan...</span>`;
+        lucide.createIcons();
+      }
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        saveCurrentGroupData(false);
+      }, 700);
+    };
+
+    window.saveCurrentGroupData = async function (showNotif = false) {
+      const data = getGroupRecord(selectedClass, selectedGroup);
+      data.groupName = document.getElementById('inputGroupName').value.trim() || `Kelompok ${selectedGroup}`;
+      data.members = document.getElementById('inputGroupMembers').value.trim();
+      data.essay1 = document.getElementById('essay1').value.trim();
+      data.essay2 = document.getElementById('essay2').value.trim();
+      data.essay3 = document.getElementById('essay3').value.trim();
+      data.strokes = JSON.stringify(strokes);
+      data.updatedAt = Date.now();
+
+      const key = `${selectedClass}_${selectedGroup}`;
+      allGroupsData[key] = data;
+
+      try {
+        if (db && currentUser) {
+          const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'lkpd_groups', key);
+          await setDoc(docRef, data);
+        }
+        const statusEl = document.getElementById('wsSaveStatus');
+        if (statusEl) {
+          statusEl.innerHTML = `<i data-lucide="cloud-check" class="w-3.5 h-3.5"></i><span>Tersimpan Otomatis</span>`;
+          lucide.createIcons();
+        }
+        if (showNotif) showToast('Hasil diskusi kelompok berhasil disimpan!', 'success');
+      } catch (err) {
+        console.error('Gagal menyimpan ke cloud:', err);
+        if (showNotif) showToast('Tersimpan di sesi lokal.', 'info');
+      }
+    };
+
+    // =========================================================================
+    // 9. MODE PRESENTASI (LATAR TERANG)
+    // =========================================================================
+    window.openPresentationMode = async function () {
+      await saveCurrentGroupData(false);
+      const data = getGroupRecord(selectedClass, selectedGroup);
+      const imgInfo = getGroupImageInfo(selectedGroup);
+
+      document.getElementById('presClassBadge').textContent = `KELAS ${selectedClass}`;
+      document.getElementById('presGroupBadge').textContent = `KELOMPOK ${selectedGroup}`;
+      document.getElementById('presGroupTitle').textContent = `Hasil Interpretasi Citra — ${data.groupName}`;
+      document.getElementById('presMembers').textContent = `Anggota Kelompok: ${data.members || '(Belum diisi)'}`;
+
+      // Render gambar dengan coretan
+      const compositeUrl = await renderCompositeImagePromise(imgInfo.src, strokes);
+      document.getElementById('presAnnotatedImage').src = compositeUrl;
+
+      // Render tabel ringkasan
+      const tbody = document.getElementById('presTableBody');
+      tbody.innerHTML = data.rows
+        .map(
+          (r, i) => `
+          <tr class="hover:bg-slate-50">
+            <td class="p-2.5 border-r border-slate-200 font-bold text-center">${i + 1}</td>
+            <td class="p-2.5 border-r border-slate-200 font-bold text-blue-700">${escapeHtml(r.objek || '-')}</td>
+            <td class="p-2.5 border-r border-slate-200">${escapeHtml(r.warna || '-')}</td>
+            <td class="p-2.5 border-r border-slate-200">${escapeHtml(r.rona || '-')}</td>
+            <td class="p-2.5 border-r border-slate-200">${escapeHtml(r.bentuk || '-')}</td>
+            <td class="p-2.5 border-r border-slate-200">${escapeHtml(r.ukuran || '-')}</td>
+            <td class="p-2.5 border-r border-slate-200">${escapeHtml(r.tekstur || '-')}</td>
+            <td class="p-2.5 border-r border-slate-200">${escapeHtml(r.pola || '-')}</td>
+            <td class="p-2.5 border-r border-slate-200">${escapeHtml(r.bayangan || '-')}</td>
+            <td class="p-2.5 border-r border-slate-200">${escapeHtml(r.situs || '-')}</td>
+            <td class="p-2.5">${escapeHtml(r.asosiasi || '-')}</td>
+          </tr>
+        `
+        )
+        .join('');
+
+      document.getElementById('presEssay1').textContent = data.essay1 || '-';
+      document.getElementById('presEssay2').textContent = data.essay2 || '-';
+      document.getElementById('presEssay3').textContent = data.essay3 || '-';
+
+      navigateTo('presentation');
+    };
+
+    // =========================================================================
+    // 10. PANEL GURU (AUTENTIKASI, PENGATURAN KELAS, MONITORING, PDF)
+    // =========================================================================
+    window.openTeacherAuthOrPanel = function () {
+      if (isTeacherLoggedIn) {
+        navigateTo('teacher');
+      } else {
+        document.getElementById('teacherPasswordInput').value = '';
+        document.getElementById('teacherLoginError').classList.add('hidden');
+        document.getElementById('modalTeacherLogin').classList.remove('hidden');
+        setTimeout(() => document.getElementById('teacherPasswordInput').focus(), 100);
+      }
+    };
+
+    window.closeTeacherModal = function () {
+      document.getElementById('modalTeacherLogin').classList.add('hidden');
+    };
+
+    window.togglePasswordVisibility = function () {
+      const inp = document.getElementById('teacherPasswordInput');
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+    };
+
+    window.submitTeacherPassword = function (e) {
+      e.preventDefault();
+      const pwd = document.getElementById('teacherPasswordInput').value;
+      if (pwd === 'gurugeo') {
+        isTeacherLoggedIn = true;
+        closeTeacherModal();
+        showToast('Selamat datang di Panel Guru!', 'success');
+        navigateTo('teacher');
+      } else {
+        document.getElementById('teacherLoginError').classList.remove('hidden');
+      }
+    };
+
+    window.logoutTeacher = function () {
+      isTeacherLoggedIn = false;
+      navigateTo('home');
+    };
+
+    function renderTeacherClassToggles() {
+      const container = document.getElementById('teacherClassToggles');
+      if (!container) return;
+
+      container.innerHTML = CLASSES.map((cls) => {
+        const isOpen = classSettings[cls.id] !== false;
+        return `
+          <div class="rounded-2xl border ${cls.borderClass} overflow-hidden bg-slate-50 dark:bg-slate-800/60 flex flex-col justify-between">
+            <div class="h-2 w-full bg-gradient-to-r ${cls.colorClass}"></div>
+            <div class="p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="font-extrabold text-base text-slate-900 dark:text-white">${cls.name}</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${isOpen ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300' : 'bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-300'}">
+                  ${isOpen ? 'Dibuka' : 'Ditutup'}
+                </span>
+              </div>
+              <button onclick="toggleClassStatus('${cls.id}')" class="w-full py-2 px-3 rounded-xl text-xs font-bold transition cursor-pointer ${
+                isOpen
+                  ? 'bg-rose-600 hover:bg-rose-500 text-white'
+                  : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+              }">
+                ${isOpen ? 'Tutup Akses Kelas' : 'Buka Akses Kelas'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.toggleClassStatus = async function (classId) {
+      classSettings[classId] = !(classSettings[classId] !== false);
+      renderTeacherClassToggles();
+      renderHomeClasses();
+
+      try {
+        if (db && currentUser) {
+          const settingsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'lkpd_settings', 'classes');
+          await setDoc(settingsDocRef, classSettings);
+        }
+        showToast(`Status ${classId} diubah menjadi ${classSettings[classId] ? 'Dibuka' : 'Ditutup'}.`, 'success');
+      } catch (err) {
+        console.error('Gagal menyimpan pengaturan kelas:', err);
+      }
+    };
+
+    window.copyShareLink = function () {
+      const inp = document.getElementById('shareUrlInput');
+      inp.select();
+      inp.setSelectionRange(0, 99999);
+      try {
+        document.execCommand('copy');
+        showToast('Tautan LKPD berhasil disalin! Siap dibagikan ke murid.', 'success');
+      } catch {
+        showToast('Silakan salin tautan pada kotak teks.', 'info');
+      }
+    };
+
+    window.setTeacherFilterClass = function (classId) {
+      teacherFilterClass = classId;
+      ['X-1', 'X-2', 'X-3'].forEach((c) => {
+        const btn = document.getElementById(`tabTeacher-${c}`);
+        if (c === classId) {
+          btn.className = 'teacher-tab px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white cursor-pointer';
+        } else {
+          btn.className = 'teacher-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 cursor-pointer';
+        }
+      });
+      renderTeacherMonitoring();
+    };
+
+    function renderTeacherMonitoring() {
+      const grid = document.getElementById('teacherMonitoringGrid');
+      if (!grid) return;
+
+      let html = '';
+      for (let g = 1; g <= 6; g++) {
+        const data = getGroupRecord(teacherFilterClass, g);
+        const filledCount = countFilledObjects(data);
+        const percent = Math.round((filledCount / 5) * 100);
+        const essayDone = [data.essay1, data.essay2, data.essay3].filter((e) => e && e.trim().length > 0).length;
+
+        html += `
+          <div class="border border-slate-200 dark:border-slate-800 border-t-4 ${GROUP_TOP_COLORS[g - 1]} rounded-2xl p-4 bg-slate-50/70 dark:bg-slate-800/40 flex flex-col justify-between space-y-3">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-sm text-slate-900 dark:text-white">${escapeHtml(data.groupName || 'Kelompok ' + g)}</span>
+                <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                  filledCount === 5
+                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300'
+                    : filledCount > 0
+                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300'
+                    : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                }">
+                  ${filledCount === 5 ? 'Selesai' : filledCount > 0 ? 'Mengerjakan' : 'Belum Mulai'}
+                </span>
+              </div>
+
+              <p class="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">
+                <strong>Anggota:</strong> ${data.members ? escapeHtml(data.members) : '<span class="italic text-slate-400">Belum diisi</span>'}
+              </p>
+
+              <div class="space-y-1">
+                <div class="flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                  <span>Tabel: ${filledCount}/5 objek</span>
+                  <span>Esai: ${essayDone}/3 terjawab</span>
+                </div>
+                <div class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full" style="width: ${percent}%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 pt-2">
+              <button onclick="inspectGroupWork('${teacherFilterClass}', ${g})" class="flex-1 py-2 px-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer">
+                <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                <span>Pantau Detail</span>
+              </button>
+              <button onclick="downloadGroupPdf('${teacherFilterClass}', ${g})" class="py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm cursor-pointer" title="Unduh Hasil PDF">
+                <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+                <span>PDF</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      grid.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    window.inspectGroupWork = async function (classId, groupNum) {
+      const data = getGroupRecord(classId, groupNum);
+      const imgInfo = getGroupImageInfo(groupNum);
+      let parsedStrokes = [];
+      try {
+        parsedStrokes = JSON.parse(data.strokes || '[]');
+      } catch {}
+
+      const compositeImg = await renderCompositeImagePromise(imgInfo.src, parsedStrokes);
+
+      document.getElementById('inspectTitle').textContent = `Pemantauan ${classId} — ${data.groupName}`;
+      document.getElementById('inspectSubtitle').textContent = `Anggota: ${data.members || '(Belum diisi)'}`;
+      document.getElementById('btnInspectDownloadPdf').onclick = () => downloadGroupPdf(classId, groupNum);
+
+      document.getElementById('inspectBody').innerHTML = `
+        <div class="rounded-xl overflow-hidden border border-slate-300 dark:border-slate-700">
+          <img src="${compositeImg}" class="w-full h-auto block" alt="Citra Anotasi Siswa" />
+        </div>
+        <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+          <table class="w-full text-left border-collapse min-w-[900px]">
+            <thead>
+              <tr class="bg-blue-600 text-white">
+                <th class="p-2 border-r border-blue-500">No</th>
+                <th class="p-2 border-r border-blue-500">Objek</th>
+                <th class="p-2 border-r border-blue-500">Warna</th>
+                <th class="p-2 border-r border-blue-500">Rona/Warna</th>
+                <th class="p-2 border-r border-blue-500">Bentuk</th>
+                <th class="p-2 border-r border-blue-500">Ukuran</th>
+                <th class="p-2 border-r border-blue-500">Tekstur</th>
+                <th class="p-2 border-r border-blue-500">Pola</th>
+                <th class="p-2 border-r border-blue-500">Bayangan</th>
+                <th class="p-2 border-r border-blue-500">Situs</th>
+                <th class="p-2">Asosiasi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+              ${data.rows
+                .map(
+                  (r, idx) => `
+                <tr>
+                  <td class="p-2 border-r border-slate-200 dark:border-slate-700 font-bold">${idx + 1}</td>
+                  <td class="p-2 border-r border-slate-200 dark:border-slate-700 font-semibold">${escapeHtml(r.objek || '-')}</td>
+                  <td class="p-2 border-r border-slate-200 dark:border-slate-700">${escapeHtml(r.warna || '-')}</td>
+                  <td class="p-2 border-r border-slate-200 dark:border-slate-700">${escapeHtml(r.rona || '-')}</td>
+                  <td class="p-2 border-r border-slate-200 dark:border-slate-700">${escapeHtml(r.bentuk || '-')}</td>
+                  <td class="p-2 border-r border-slate-200 dark:border-slate-700">${escapeHtml(r.ukuran || '-')}</td>
+                  <td class="p-2 border-r border-slate-200 dark:border-slate-700">${escapeHtml(r.tekstur || '-')}</td>
+                  <td class="p-2 border-r border-slate-200 dark:border-slate-700">${escapeHtml(r.pola || '-')}</td>
+                  <td class="p-2 border-r border-slate-200 dark:border-slate-700">${escapeHtml(r.bayangan || '-')}</td>
+                  <td class="p-2 border-r border-slate-200 dark:border-slate-700">${escapeHtml(r.situs || '-')}</td>
+                  <td class="p-2">${escapeHtml(r.asosiasi || '-')}</td>
+                </tr>
+              `
+                )
+                .join('')}
+            </tbody>
+          </table>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800">
+            <p class="font-bold mb-1">1. Unsur paling membantu:</p>
+            <p>${escapeHtml(data.essay1 || '-')}</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800">
+            <p class="font-bold mb-1">2. Objek sulit dibedakan:</p>
+            <p>${escapeHtml(data.essay2 || '-')}</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800">
+            <p class="font-bold mb-1">3. Pentingnya > 1 unsur:</p>
+            <p>${escapeHtml(data.essay3 || '-')}</p>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('modalInspectGroup').classList.remove('hidden');
+      lucide.createIcons();
+    };
+
+    // --- UNDUH HASIL PENGERJAAN SISWA DALAM FORMAT PDF ---
+    window.downloadGroupPdf = async function (classId, groupNum) {
+      showToast(`Menyiapkan file PDF untuk ${classId} Kelompok ${groupNum}...`, 'info');
+      const data = getGroupRecord(classId, groupNum);
+      const imgInfo = getGroupImageInfo(groupNum);
+      let parsedStrokes = [];
+      try {
+        parsedStrokes = JSON.parse(data.strokes || '[]');
+      } catch {}
+
+      const compositeImg = await renderCompositeImagePromise(imgInfo.src, parsedStrokes);
+      const sandbox = document.getElementById('pdfPrintSandbox');
+
+      sandbox.innerHTML = `
+        <div style="font-family: Arial, sans-serif; color: #0f172a; padding: 10px;">
+          <div style="border-bottom: 3px solid #2563eb; padding-bottom: 10px; margin-bottom: 14px;">
+            <h1 style="font-size: 18px; font-weight: bold; margin: 0; color: #1e3a8a;">LAPORAN HASIL LKPD INTERPRETASI CITRA PENGINDERAAN JAUH</h1>
+            <p style="font-size: 12px; margin: 4px 0 0 0; color: #475569;">Kelas: <strong>${classId}</strong> | Kelompok: <strong>${escapeHtml(data.groupName)}</strong></p>
+            <p style="font-size: 11px; margin: 4px 0 0 0; color: #334155;">Anggota Kelompok: ${escapeHtml(data.members || '-')}</p>
+          </div>
+
+          <div style="margin-bottom: 14px; text-align: center;">
+            <img src="${compositeImg}" style="width: 100%; max-height: 290px; object-fit: contain; border: 1px solid #cbd5e1; border-radius: 6px;" />
+          </div>
+
+          <h2 style="font-size: 13px; font-weight: bold; margin-bottom: 6px; color: #1e40af;">A. Tabel Identifikasi 8 Unsur Interpretasi Citra</h2>
+          <table style="width: 100%; border-collapse: collapse; font-size: 9px; margin-bottom: 14px;">
+            <thead>
+              <tr style="background-color: #2563eb; color: #ffffff;">
+                <th style="border: 1px solid #cbd5e1; padding: 5px;">No</th>
+                <th style="border: 1px solid #cbd5e1; padding: 5px;">Objek</th>
+                <th style="border: 1px solid #cbd5e1; padding: 5px;">Warna</th>
+                <th style="border: 1px solid #cbd5e1; padding: 5px;">Rona/Warna</th>
+                <th style="border: 1px solid #cbd5e1; padding: 5px;">Bentuk</th>
+                <th style="border: 1px solid #cbd5e1; padding: 5px;">Ukuran</th>
+                <th style="border: 1px solid #cbd5e1; padding: 5px;">Tekstur</th>
+                <th style="border: 1px solid #cbd5e1; padding: 5px;">Pola</th>
+                <th style="border: 1px solid #cbd5e1; padding: 5px;">Bayangan</th>
+                <th style="border: 1px solid #cbd5e1; padding: 5px;">Situs</th>
+                <th style="border: 1px solid #cbd5e1; padding: 5px;">Asosiasi</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.rows
+                .map(
+                  (r, i) => `
+                <tr>
+                  <td style="border: 1px solid #cbd5e1; padding: 4px; text-align: center; font-weight: bold;">${i + 1}</td>
+                  <td style="border: 1px solid #cbd5e1; padding: 4px; font-weight: bold;">${escapeHtml(r.objek || '-')}</td>
+                  <td style="border: 1px solid #cbd5e1; padding: 4px;">${escapeHtml(r.warna || '-')}</td>
+                  <td style="border: 1px solid #cbd5e1; padding: 4px;">${escapeHtml(r.rona || '-')}</td>
+                  <td style="border: 1px solid #cbd5e1; padding: 4px;">${escapeHtml(r.bentuk || '-')}</td>
+                  <td style="border: 1px solid #cbd5e1; padding: 4px;">${escapeHtml(r.ukuran || '-')}</td>
+                  <td style="border: 1px solid #cbd5e1; padding: 4px;">${escapeHtml(r.tekstur || '-')}</td>
+                  <td style="border: 1px solid #cbd5e1; padding: 4px;">${escapeHtml(r.pola || '-')}</td>
+                  <td style="border: 1px solid #cbd5e1; padding: 4px;">${escapeHtml(r.bayangan || '-')}</td>
+                  <td style="border: 1px solid #cbd5e1; padding: 4px;">${escapeHtml(r.situs || '-')}</td>
+                  <td style="border: 1px solid #cbd5e1; padding: 4px;">${escapeHtml(r.asosiasi || '-')}</td>
+                </tr>
+              `
+                )
+                .join('')}
+            </tbody>
+          </table>
+
+          <h2 style="font-size: 13px; font-weight: bold; margin-bottom: 6px; color: #1e40af;">B. Jawaban Pertanyaan Diskusi</h2>
+          <div style="font-size: 10px; line-height: 1.4;">
+            <p style="margin: 0 0 6px 0;"><strong>1. Unsur apa yang paling membantu kelompokmu mengidentifikasi objek?</strong><br/>${escapeHtml(data.essay1 || '-')}</p>
+            <p style="margin: 0 0 6px 0;"><strong>2. Apakah ada objek yang sulit dibedakan? Jelaskan penyebabnya.</strong><br/>${escapeHtml(data.essay2 || '-')}</p>
+            <p style="margin: 0;"><strong>3. Mengapa identifikasi objek sebaiknya menggunakan lebih dari satu unsur?</strong><br/>${escapeHtml(data.essay3 || '-')}</p>
+          </div>
+        </div>
+      `;
+
+      const opt = {
+        margin: 8,
+        filename: `LKPD_Interpretasi_Citra_${classId}_Kelompok_${groupNum}.pdf`,
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+      };
+
+      try {
+        await html2pdf().set(opt).from(sandbox.firstElementChild).save();
+        showToast('File PDF berhasil diunduh!', 'success');
+      } catch (err) {
+        console.error('Error generate PDF:', err);
+        showToast('Gagal membuat PDF. Coba lagi.', 'error');
+      } finally {
+        sandbox.innerHTML = '';
+      }
+    };
+
+    // =========================================================================
+    // 11. UTILITAS & NOTIFIKASI TOAST
+    // =========================================================================
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      const bgClass =
+        type === 'success'
+          ? 'bg-emerald-600 text-white'
+          : type === 'error'
+          ? 'bg-rose-600 text-white'
+          : 'bg-slate-800 text-white';
+
+      toast.className = `${bgClass} px-4 py-3 rounded-xl shadow-lg text-xs font-semibold flex items-center gap-2 transition-all duration-300`;
+      toast.textContent = message;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+
+    // Jalankan saat halaman dimuat
+    window.addEventListener('DOMContentLoaded', () => {
+      loadAttachedGroupImages();
+      renderHomeClasses();
+      lucide.createIcons();
+      initCloudSync();
+    });
+  </script>
+</body>
+</html>
